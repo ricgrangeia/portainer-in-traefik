@@ -1,0 +1,46 @@
+version: "3.7"
+
+volumes:
+  portainer_data:
+    name: "portainer_data"
+    external: false
+
+networks:
+  proxy:
+    name: "$EXTERNAL_PROXY_NETWORK"
+    external: true
+  internal:
+    name: "portainer-network"
+    external: false
+
+services:
+
+  portainer:
+
+    container_name: portainer
+
+    image: portainer/portainer-ee:latest
+
+    command: -H unix:///var/run/docker.sock
+
+    restart: always
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`$HOST_DOMAIN`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.service=portainer"
+      - "traefik.http.routers.portainer.tls.certresolver=leresolver"
+
+
+    ports:
+      - 9443:9443
+
+    networks:
+      - proxy
+      - internal
