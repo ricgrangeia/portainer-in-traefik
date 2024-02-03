@@ -1,0 +1,1 @@
+# portainer-in-traefik
